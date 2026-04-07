@@ -1,8 +1,7 @@
 <?php
 include 'config.php';
 
-$query = "SELECT * FROM products";
-$result = mysqli_query($conn, $query);
+$products = mysqli_query($conn, "SELECT * FROM products");
 ?>
 
 <!DOCTYPE html>
@@ -14,15 +13,34 @@ $result = mysqli_query($conn, $query);
 
 <h1>Daftar Produk</h1>
 
-<?php if (mysqli_num_rows($result) == 0) { ?>
-    <p>Belum ada produk</p>
-<?php } ?>
-
-<?php while($row = mysqli_fetch_assoc($result)) { ?>
+<?php while ($p = mysqli_fetch_assoc($products)) { ?>
     <div style="border:1px solid #000; margin:10px; padding:10px;">
-        <h3><?php echo $row['product_name']; ?></h3>
-        <p>Harga: Rp <?php echo $row['price']; ?></p>
-        <p>Rating: <?php echo $row['average_rating']; ?></p>
+        
+        <h3><?php echo $p['product_name']; ?></h3>
+        <p>Harga: Rp <?php echo $p['price']; ?></p>
+        <p>Rating Produk: <?php echo $p['average_rating']; ?></p>
+
+        <h4>Review:</h4>
+
+        <?php
+        $reviews = mysqli_query($conn, "
+            SELECT r.rating, r.comment 
+            FROM reviews r
+            JOIN order_items oi ON r.order_item_id = oi.order_item_id
+            WHERE oi.product_id = " . $p['product_id']
+        );
+
+        if (mysqli_num_rows($reviews) == 0) {
+            echo "<i>Belum ada review</i>";
+        } else {
+            while ($r = mysqli_fetch_assoc($reviews)) {
+                echo "<p>Rating: " . $r['rating'] . "/5</p>";
+                echo "<p>Komentar: " . $r['comment'] . "</p>";
+                echo "<hr>";
+            }
+        }
+        ?>
+
     </div>
 <?php } ?>
 
